@@ -10,7 +10,8 @@ Here's what a puzzle URL looks like (spread out onto multiple lines):
 HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US;
 rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
 """
-__author__ = "Michael DeMory, with help from Tiffany McLean, Mavrick Watts, Daniel,and Zac Gerber "
+__author__ = """Michael DeMory, with help from Tiffany McLean, Mavrick Watts,
+Daniel,and Zac Gerber """
 
 import os
 import re
@@ -19,17 +20,21 @@ import urllib.request
 import argparse
 
 
-def read_urls (filename):
+def read_urls(filename):
     """Open, pattern search for specific urls, read files"""
     path = "http://" + filename.split("_")[1]
     urls = set()
-    images = re.findall(r'GET (\/.*?\.jpg)', open(filename).read())
+
+    with open(filename) as f:
+        files = f.read()
+    images = re.findall(r'GET (\/.*?\.jpg)', files)
 
     for image in images:
         if '/puzzle/' in image:
             urls.add(path + image)
 
     return sorted(urls, key=return_last_word)
+
 
 def return_last_word(url):
     """allows for sort on last portion of file name"""
@@ -38,16 +43,16 @@ def return_last_word(url):
         return matches.group(2)
     return url
 
+
 def download_images(img_urls, dest_dir):
     """download images and assemble"""
 
     if not os.path.exists(dest_dir):
-	    os.makedirs(dest_dir)
+        os.makedirs(dest_dir)
 
     os.chdir(dest_dir)
 
     tags_image = []
-
 
     for i, url in enumerate(img_urls):
         image_name = f'img{i}'
@@ -61,7 +66,9 @@ def download_images(img_urls, dest_dir):
         tags_image.append('<img src="{0}">'.format(image_name))
 
     html_file = open("index.html", "w")
-    html_file.write("<html><body>{0}</body></html>".format(''.join(tags_image)))
+    html_file.write("<html><body>{0}</body></html>".format(
+        ''.join(tags_image)))
+
 
 def create_parser():
     """Creates an argument parser object."""
@@ -90,7 +97,6 @@ def main(args):
     else:
         print('\n'.join(img_urls))
 
-    
     # parsed_args = parser.parse_args(args)
     # img_urls = read_urls(parsed_args.logfile)
     # if parsed_args.todir:
@@ -98,6 +104,6 @@ def main(args):
     # else:
     #     print('\n'.join(img_urls))
 
+
 if __name__ == '__main__':
     main(sys.argv[1:])
-
